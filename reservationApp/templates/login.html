@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block pageContent %}
+<style>
+    main {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+
+    body {
+        background: linear-gradient(to right, #3498db, #c0392b);
+        margin: 0;
+        height: 100vh;
+    }
+
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    #logo-img {
+        height: 25em;
+        width: 40em;
+    }
+
+    .login-form {
+        max-width: 400px;
+        width: 100%;
+        background: linear-gradient(to right, #4CAF50, #FFC107);
+        border-radius: 20px; /* Increased border radius */
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: #0e0350;
+        font-weight: bold; /* Bold form labels for better visibility */
+    }
+
+    .form-control {
+        border-radius: 15px; /* Increased border radius for text fields */
+    }
+
+    .btn-primary {
+        background-color: #4CAF50;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-form">
+        <div class="card card-default rounded-0 shadow">
+            <div class="card-header">
+                <h3 class="card-title text-Black" style="text-align: center;"><b>Admin Login Page</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="container-fluid">
+                    <form id="login-user">
+                        {% csrf_token %}
+                        <div class="mdc-layout-grid">
+                            <div class="mdc-layout-grid__inner">
+                                <div class="form-group mb-3">
+                                    <label for="username" class="control-label form-label">Username</label>
+                                    <input type="text" class="form-control rounded-0" autofocus name="username" id="username" required="required">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="password" class="control-label form-label">Password</label>
+                                    <input type="password" class="form-control rounded-0" name="password" id="password" required="required">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div class="col-md-4">
+                                            <!-- Your optional signup link goes here -->
+                                        </div>
+                                        <button class="btn btn-sm rounded-0 btn-primary">
+                                            Login
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <img src="{{ MEDIA_URL }}/default/bus_image1.jpg" alt="" id="logo-img">
+    </div>
+</div>
+
+{% endblock pageContent %}
+
+{% block ScriptBlock %}
+<script>
+    $(function() {
+        $('#login-user').submit(function(e) {
+            e.preventDefault();
+            var _this = $(this)
+            $('.err-msg').remove();
+            var el = $('<div>')
+            el.addClass("alert alert-danger err-msg")
+            el.hide()
+            if (_this[0].checkValidity() == false) {
+                _this[0].reportValidity();
+                return false;
+            }
+            start_loader();
+            $.ajax({
+                headers: {
+                    "X-CSRFToken": '{{csrf_token}}'
+                },
+                url: "{% url 'login-user' %}",
+                data: new FormData($(this)[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                dataType: 'json',
+                error: err => {
+                    console.log(err)
+                    alert_toast("An error occurred", 'error');
+                    end_loader();
+                },
+                success: function(resp) {
+                    if (typeof resp == 'object' && resp.status == 'success') {
+                        el.removeClass("alert alert-danger err-msg")
+                        location.href = "{% url 'home-page' %}"
+                    } else if (resp.status == 'failed' && !!resp.msg) {
+                        el.text(resp.msg)
+                    } else {
+                        el.text("An error occurred", 'error');
+                        end_loader();
+                        console.error(resp)
+                    }
+                    _this.prepend(el)
+                    el.show('slow')
+                    $("html, body, .modal").scrollTop(0);
+                    end_loader()
+                }
+            })
+        })
+    })
+</script>
+{% endblock ScriptBlock %}

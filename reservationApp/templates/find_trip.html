@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block pageContent %}
+<style>
+    main {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+
+    body {
+        background: linear-gradient(to right, #3498db, #c0392b);
+        margin: 0;
+        height: 100vh;
+    }
+
+    .find-trip-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    .find-trip-form {
+        max-width: 400px;
+        width: 100%;
+        background: linear-gradient(to right, #4CAF50, #FFC107);
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: #0e0350;
+        font-weight: bold;
+    }
+
+    .form-control {
+        border-radius: 15px;
+    }
+
+    .btn-primary {
+        background-color: #4CAF50;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049;
+    }
+</style>
+
+<div class="find-trip-container">
+    <div class="find-trip-form">
+        <div class="card card-default rounded-0 shadow">
+            <div class="card-header">
+                <h3 class="card-title text-black" style="text-align: center;"><b>Find Trip</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="container-fluid">
+                    <form id="find-trip-form" method="POST" action="{% url 'scheduled-trips-page' %}">
+                        {% csrf_token %}
+                        <div class="mdc-layout-grid">
+                            <div class="mdc-layout-grid__inner">
+                                <div class="form-group mb-3">
+                                    <label for="date" class="control-label form-label">Date</label>
+                                    <input type="date" class="form-control rounded-0" min="{{ today }}" autofocus name="date" id="date" required="required">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="depart" class="control-label form-label">Depart</label>
+                                    <select name="depart" id="depart" class="form-select select2 rounded-0">
+                                        <option selected></option>
+                                        {% for location in locations %}
+                                        <option value="{{ location.id }}">{{ location }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="destination" class="control-label form-label">Destination</label>
+                                    <select name="destination" id="destination" class="form-select select2 rounded-0">
+                                        <option selected></option>
+                                        {% for location in locations %}
+                                        <option value="{{ location.id }}">{{ location }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <button class="btn btn-sm rounded-0 btn-primary">
+                                            Find Trip
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock pageContent %}
+{% block ScriptBlock %}
+<script>
+    $(function () {
+        $('.select2').select2({
+            width: "100%",
+            placeholder: "Please Select Here",
+        })
+    })
+</script>
+{% endblock ScriptBlock %}

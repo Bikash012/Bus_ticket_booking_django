@@ -1,0 +1,261 @@
+<style>
+    body {
+        background: linear-gradient(to right, #3498db, #c0392b); /* Adjust the colors as needed */
+    }
+</style>
+   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSAXdLBtjMxdc_O-SShjfrsD0DEnd2Gv4&libraries=geometry"></script>
+    {% extends 'base.html' %} {% load humanize %} {% block pageContent %}
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card card-default rounded-0 shadow ">
+            <div class="card-header">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <h4 class="card-title fw-bold">{% if not is_searched %}Scheduled Trip{% else %}Searched Trip Result{% endif %}</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+                <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+                                <div class="container-fluid">
+                                    {% if is_searched %}
+                                    <fieldset>
+                                        <legend>Looking for</legend>
+                                        <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">Date:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1">{{ data.date }}</dd>
+                                        </dl>
+                                        <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">Depart:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1">{{ data.depart.location }}</dd>
+                                        </dl>
+                                        <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">Destination:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1">{{ data.destination.location }}</dd>
+                                        </dl>
+                                        <!-- <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">GEOCODED DEPART:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1" data-geocode="depart">{{ geocodedDepart }}</dd>
+                                        </dl>
+                                        <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">GEOCODED DESTINATION:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1" data-geocode="destination">{{ geocodedDestination }}</dd>
+                                        </dl> -->
+                                        <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">Estimated Distance:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1" data-geocode="distance">{{ test }}</dd>
+                                        </dl>
+                                         <dl class="row my-0">
+                                            <dt class="col-auto fw-bold">Estimated Time:</dt>
+                                            <dd class="col-auto flex-grow-1 flex-shrink-1" data-geocode="time">{{ test }}</dd>
+                                        </dl>
+
+                                        <div id="map-container" class="mt-3" style="height: 300px;"></div>
+
+
+
+                                    </fieldset>
+                                    {% endif %}
+                                    <table class="table table-bordered" id="schedule-list">
+                                        <colgroup>
+                                            <col width="5%">
+                                            <col width="15%">
+                                            <col width="20%">
+                                            <col width="30%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                        </colgroup>
+                                        <thead>
+                                            <tr class="bg-gradient bg-primary bg-opacity-50 text-light">
+                                                <th class="px-2 py-2 text-center">#</th>
+                                                <th class="px-2 py-2 text-center">Available Seats</th>
+                                                <th class="px-2 py-2 text-center">Schedule/Bus</th>
+                                                <th class="px-2 py-2 text-center">Route (From - To)</th>
+                                                <th class="px-2 py-2 text-center">Fare</th>
+                                                <th class="px-2 py-2 text-center">Status</th>
+                                                <th class="px-2 py-2 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for schedule in schedules %}
+                                            <tr>
+                                                <td class="px-2 py-1 align-middle">{{ forloop.counter }}</td>
+                                                <td class="px-2 py-1 align-middle text-center">{{ schedule.count_available|floatformat:0|intcomma }}</td>
+                                                <td class="px-2 py-1 align-middle">
+                                                    <div class="lh-1">
+                                                        <div>{{ schedule.schedule|date:"Y-m-d h:i A" }}</div>
+                                                        <div>{{ schedule.bus.bus_number }}</div>
+                                                        <small class="text-muted">{{ schedule.bus.category }}</small>
+                                                    </div>
+                                                </td>
+                                                <td class="px-2 py-1 align-middle">
+                                                    <div class="lh-1">
+                                                        <div>{{ schedule.depart }}</div>
+                                                        <div>{{ schedule.destination }}</div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-2 py-1 align-middle text-end">{{ schedule.fare|intcomma }}</td>
+                                                <td class="px-1 py-1 align-middle text-center">
+                                                    {% if schedule.status == '1' %}
+                                                    <span class="badge bg-primary bg-gradient rounded-pill px-2">Active</span> {% else %}
+                                                    <span class="badge bg-danger bg-gradient rounded-pill px-2">Cancelled</span> {% endif %}
+                                                </td>
+                                                <td class="px-2 py-1 align-middle text-center">
+                                                    <button class="btn btn-outline-primary btn-sm book-data" type="button" data-id="{{ schedule.pk }}" title="Book Now">
+                                                        <i class="fa fa-ticket-alt"></i> Book
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endblock pageContent %} {% block ScriptBlock %}
+                    <script>
+                          var geocodedDepart;
+                          var geocodedDestination;
+                        console.log("Bikash Joshi");
+                        $(function() {
+                            $('.book-data').click(function() {
+                                uni_modal("Booking Form", '{%  url "manage-booking" %}/' + $(this).attr('data-id'), 'mid-large')
+                            })
+                    
+                     
+                            function geocodeLocation(location) {
+        return new Promise((resolve, reject) => {
+            var apiKey = 'AIzaSyDSAXdLBtjMxdc_O-SShjfrsD0DEnd2Gv4';
+            var geocodeUrl = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + encodeURIComponent(location) + '&key=' + apiKey;
+
+            $.ajax({
+                url: geocodeUrl,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.results && response.results.length > 0) {
+                        const { lat, lng } = response.results[0].geometry.location;
+                        resolve({ latitude: lat, longitude: lng });
+                    } else {
+                        reject('Geocoding failed');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error during geocoding:', error);
+                    reject('Geocoding failed');
+                }
+            });
+        });
+    }
+
+ 
+geocodeLocation('{{ data.depart.location }}')
+    .then(result => {
+        geocodedDepart = result;
+        console.log('Geocoded Depart:', geocodedDepart);
+        //store the value on geoCode-depart that can be rendered on html
+        $('[data-geocode="depart"]').text(JSON.stringify(geocodedDepart));
+
+        return geocodeLocation('{{ data.destination.location }}');
+    })
+    .then(result => {
+        geocodedDestination = result;
+        console.log('Geocoded Destination:', geocodedDestination);
+        //store the value on geoCode-destination that can be rendered on html
+        $('[data-geocode="destination"]').text(JSON.stringify(geocodedDestination));
+
+
+const distance = haversineDistance(
+                    geocodedDepart.latitude,
+                    geocodedDepart.longitude,
+                    geocodedDestination.latitude,
+                    geocodedDestination.longitude
+                );
+
+                console.log('Distance:', distance.toFixed(2) + ' km');
+                // stpre on data-geocode="time"
+
+                $('[data-geocode="distance"]').text(distance.toFixed(2) + ' km');
+
+
+const averageBusSpeed = 40;  
+
+        const estimatedTimeHours = distance / averageBusSpeed;
+
+        const estimatedTimeMinutes = estimatedTimeHours * 60;
+
+        console.log('Estimated Time:', estimatedTimeMinutes.toFixed(2) + ' minutes');
+        // stpre on data-geocode="time"
+        //add hours and minutes both on estimated TotalTime
+// get minutes up with 0 decimal places
+const estimatedTotalTime = Math.floor(estimatedTimeMinutes / 60) + ' hours ' + Math.floor(estimatedTimeMinutes.toFixed(2) % 60) + ' minutes';
+
+        $('[data-geocode="time"]').text(estimatedTotalTime);
+
+        $('#schedule-list').DataTable({
+            columnDefs: [{
+                orderable: false,
+                targets: 6
+            }],
+            initComplete: function(settings, json) {
+                $('table td, table th').addClass('px-2 py-1');
+            },
+            drawCallback: function(settings) {
+                $('table td, table th').addClass('px-2 py-1');
+            }
+        });
+        showMapRoute(geocodedDepart, geocodedDestination);
+
+    })
+    .catch(error => {
+        console.error(error);
+    });
+
+        $('.book-data').click(function() {
+            uni_modal("Booking Form", '{%  url "manage-booking" %}/' + $(this).attr('data-id'), 'mid-large');
+        });
+    });
+
+     function showMapRoute(depart, destination) {
+        var map = new google.maps.Map(document.getElementById('map-container'), {
+            center: { lat: (depart.latitude + destination.latitude) / 2, lng: (depart.longitude + destination.longitude) / 2 },
+            zoom: 8
+        });
+
+        var routeCoordinates = [
+            { lat: depart.latitude, lng: depart.longitude },
+            { lat: destination.latitude, lng: destination.longitude }
+        ];
+
+        var routePath = new google.maps.Polyline({
+            path: routeCoordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+
+        routePath.setMap(map);
+    }
+
+
+</script>
+
+<script>
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; 
+        return distance;
+    }
+</script>
+
+
+    {% endblock ScriptBlock %}
